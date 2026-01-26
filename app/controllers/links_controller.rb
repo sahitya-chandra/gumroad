@@ -28,7 +28,7 @@ class LinksController < ApplicationController
   before_action :set_frontend_performance_sensitive, only: %i[show]
   before_action :ensure_domain_belongs_to_seller, only: [:show]
   before_action :fetch_product_and_enforce_ownership, only: %i[destroy]
-  before_action :fetch_product_and_enforce_access, only: %i[update publish unpublish release_preorder update_sections]
+  before_action :fetch_product_and_enforce_access, only: %i[publish unpublish release_preorder update_sections]
 
   layout "inertia", only: [:index, :new, :edit]
 
