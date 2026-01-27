@@ -39,7 +39,7 @@ export const saveProduct = async (permalink: string, id: string, product: Produc
   const response = await request({
     method: "PATCH",
     accept: "json",
-    url: updateUrl,
+    url: updateUrl!,
     data: {
       ...product,
       price_currency_type: currencyType,

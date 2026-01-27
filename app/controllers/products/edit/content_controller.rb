@@ -22,12 +22,19 @@ module Products
 
         flash[:notice] = "Your changes have been saved!"
         check_offer_codes_validity
-        redirect_to products_edit_content_path(id: @product.unique_permalink)
+
+        if request.inertia?
+          redirect_to products_edit_content_path(id: @product.unique_permalink)
+        else
+          render json: { success: true }
+        end
       end
 
       private
         def update_content_attributes
           # Content tab specific updates
+          # Exclude rich_content as it's handled via update_rich_content
+          @product.assign_attributes(product_permitted_params.except(:files, :variants, :custom_domain, :rich_content))
           SaveFilesService.perform(@product, product_permitted_params, rich_content_params)
           update_rich_content
           @product.save!
@@ -62,7 +69,8 @@ module Products
         end
 
         def product_permitted_params
-          params.permit(policy(@product).content_tab_permitted_attributes)
+          scope = params[:product].present? ? params.require(:product) : params
+          scope.permit(policy(@product).content_tab_permitted_attributes)
         end
     end
   end

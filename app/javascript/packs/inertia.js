@@ -4,6 +4,13 @@ import { createRoot } from "react-dom/client";
 
 import AppWrapper from "../inertia/app_wrapper.tsx";
 import Layout, { AuthenticationLayout, LoggedInUserLayout } from "../inertia/layout.tsx";
+import { defaults as requestDefaults } from "$app/utils/request";
+
+// Set up CSRF token for non-Inertia requests (e.g., saveProduct, setProductPublished)
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+if (csrfToken) {
+  requestDefaults.headers = { "X-CSRF-Token": csrfToken };
+}
 
 // Configure Inertia to send CSRF token with all requests
 router.on("before", (event) => {

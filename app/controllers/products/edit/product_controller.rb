@@ -17,20 +17,33 @@ module Products
             update_product_attributes
           end
         rescue ActiveRecord::RecordNotSaved, ActiveRecord::RecordInvalid, Link::LinkInvalid => e
-          error_message = @product.errors.full_messages.first || e.message
+          if @product.errors.details[:custom_fields].present?
+            error_message = "You must add titles to all of your inputs"
+          else
+            error_message = @product.errors.full_messages.first || e.message
+          end
           flash[:error] = error_message
           return redirect_back fallback_location: edit_link_path(@product.external_id)
         end
 
         flash[:notice] = "Your changes have been saved!"
         check_offer_codes_validity
-        redirect_to edit_link_path(id: @product.unique_permalink)
+
+        if request.inertia?
+          redirect_to edit_link_path(id: @product.unique_permalink)
+        else
+          render json: { success: true }
+        end
       end
 
       private
 
         def update_product_attributes
           # Product tab specific updates
+          # Note: We exclude attributes that either:
+          # - Are handled separately (description, variants, etc.)
+          # - Are nested hashes that can't be directly assigned (refund_policy, integrations)
+          # - Don't exist as direct model attributes (file_attributes)
           @product.assign_attributes(product_permitted_params.except(
             :description,
             :cancellation_discount,
@@ -47,7 +60,10 @@ module Products
             :default_offer_code_id,
             :public_files,
             :shipping_destinations,
-            :community_chat_enabled
+            :community_chat_enabled,
+            :custom_domain,
+            :file_attributes,
+            :refund_policy
           ))
 
           if @product.native_type === ::Link::NATIVE_TYPE_COFFEE && product_permitted_params[:variants].present?
@@ -165,7 +181,8 @@ module Products
         end
 
         def product_permitted_params
-          params.permit(policy(@product).product_tab_permitted_attributes)
+          scope = params[:product].present? ? params.require(:product) : params
+          scope.permit(policy(@product).product_tab_permitted_attributes)
         end
     end
   end

@@ -22,19 +22,25 @@ module Products
 
         flash[:notice] = "Your changes have been saved!"
         check_offer_codes_validity
-        redirect_to products_edit_receipt_path(id: @product.unique_permalink)
+
+        if request.inertia?
+          redirect_to products_edit_receipt_path(id: @product.unique_permalink)
+        else
+          render json: { success: true }
+        end
       end
 
       private
 
         def update_receipt_attributes
           # Receipt tab specific updates
-          @product.assign_attributes(product_permitted_params)
+          @product.assign_attributes(product_permitted_params.except(:custom_domain))
           @product.save!
         end
 
         def product_permitted_params
-          params.permit(policy(@product).receipt_tab_permitted_attributes)
+          scope = params[:product].present? ? params.require(:product) : params
+          scope.permit(policy(@product).receipt_tab_permitted_attributes)
         end
     end
   end

@@ -28,12 +28,26 @@ describe Products::Edit::ContentController, inertia: true do
       }
     end
 
-    it "updates the product content and redirects" do
-      patch :update, params: params
+    context "with Inertia request" do
+      before { request.headers["X-Inertia"] = "true" }
 
-      expect(response).to redirect_to(products_edit_content_path(id: product.unique_permalink))
-      expect(flash[:notice]).to eq("Your changes have been saved!")
-      expect(product.reload.rich_contents.count).to eq(1)
+      it "updates the product content and redirects" do
+        patch :update, params: params
+
+        expect(response).to redirect_to(products_edit_content_path(id: product.unique_permalink))
+        expect(flash[:notice]).to eq("Your changes have been saved!")
+        expect(product.reload.rich_contents.count).to eq(1)
+      end
+    end
+
+    context "with JSON API request" do
+      it "updates the product content and returns success JSON" do
+        patch :update, params: params, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body).to eq({ "success" => true })
+        expect(product.reload.rich_contents.count).to eq(1)
+      end
     end
   end
 end

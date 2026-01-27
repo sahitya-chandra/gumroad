@@ -10,12 +10,8 @@ module Products
 
       private
         def fetch_product
-          @product = Link.fetch_leniently(params[:id], user: current_seller)
-          if @product.nil?
-            @product = Link.fetch_leniently(params[:id])
-            raise(ActiveRecord::RecordNotFound) if @product.nil? || @product.archived? || @product.deleted_at.present?
-            return redirect_to(short_link_path(@product))
-          end
+          @product = Link.fetch_leniently(params[:id], user: current_seller) || Link.fetch_leniently(params[:id])
+          raise(ActiveRecord::RecordNotFound) if @product.nil? || @product.archived? || @product.deleted_at.present?
         end
 
         def authorize_product

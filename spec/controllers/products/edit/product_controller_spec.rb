@@ -41,19 +41,28 @@ describe Products::Edit::ProductController, inertia: true do
       }
     end
 
-    it "updates the product and redirects to edit path" do
-      patch :update, params: params
+    context "with Inertia request" do
+      before { request.headers["X-Inertia"] = "true" }
 
-      expect(product.reload.name).to eq("Updated Name")
-      expect(product.description).to eq("Updated Description")
-      expect(response).to redirect_to(edit_link_path(id: product.unique_permalink))
-      expect(flash[:notice]).to eq("Your changes have been saved!")
+      it "updates the product and redirects to edit path" do
+        patch :update, params: params
+
+        expect(product.reload.name).to eq("Updated Name")
+        expect(product.description).to eq("Updated Description")
+        expect(response).to redirect_to(edit_link_path(id: product.unique_permalink))
+        expect(flash[:notice]).to eq("Your changes have been saved!")
+      end
     end
 
-    it "can update via JSON for SPA feel" do
-      patch :update, params: params, as: :json
-      expect(response).to have_http_status(:found)
-      expect(product.reload.name).to eq("Updated Name")
+    context "with JSON API request" do
+      it "updates the product and returns success JSON" do
+        patch :update, params: params, as: :json
+
+        expect(product.reload.name).to eq("Updated Name")
+        expect(product.description).to eq("Updated Description")
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body).to eq({ "success" => true })
+      end
     end
   end
 end

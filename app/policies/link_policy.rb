@@ -56,11 +56,16 @@ class LinkPolicy < ApplicationPolicy
     update?
   end
 
-  def product_tab_permitted_attributes
+  def shared_tab_permitted_attributes
     [
       :name,
+      :custom_permalink
+    ]
+  end
+
+  def product_tab_permitted_attributes
+    shared_tab_permitted_attributes + [
       :description,
-      :custom_permalink,
       :price_currency_type,
       :price_cents,
       :customizable_price,
@@ -137,7 +142,7 @@ class LinkPolicy < ApplicationPolicy
   end
 
   def content_tab_permitted_attributes
-    [
+    shared_tab_permitted_attributes + [
       :has_same_rich_content_for_all_variants,
       rich_content:,
       files: [:id, :display_name, :description, :folder_id, :size, :position, :url, :isbn,
@@ -150,19 +155,18 @@ class LinkPolicy < ApplicationPolicy
   end
 
   def receipt_tab_permitted_attributes
-    [
+    shared_tab_permitted_attributes + [
       :custom_receipt_text,
       :custom_view_content_button_text,
     ]
   end
 
   def share_tab_permitted_attributes
-    [
+    shared_tab_permitted_attributes + [
       :is_adult,
       :display_product_reviews,
       :discover_fee_per_thousand,
       :custom_domain,
-      :custom_permalink,
       tags: [],
     ]
   end

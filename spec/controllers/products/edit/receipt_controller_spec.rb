@@ -29,13 +29,28 @@ describe Products::Edit::ReceiptController, inertia: true do
       }
     end
 
-    it "updates the receipt info and redirects" do
-      patch :update, params: params
+    context "with Inertia request" do
+      before { request.headers["X-Inertia"] = "true" }
 
-      expect(response).to redirect_to(products_edit_receipt_path(id: product.unique_permalink))
-      expect(flash[:notice]).to eq("Your changes have been saved!")
-      expect(product.reload.custom_receipt_text).to eq("Thanks for buying!")
-      expect(product.custom_view_content_button_text).to eq("Download Now")
+      it "updates the receipt info and redirects" do
+        patch :update, params: params
+
+        expect(response).to redirect_to(products_edit_receipt_path(id: product.unique_permalink))
+        expect(flash[:notice]).to eq("Your changes have been saved!")
+        expect(product.reload.custom_receipt_text).to eq("Thanks for buying!")
+        expect(product.custom_view_content_button_text).to eq("Download Now")
+      end
+    end
+
+    context "with JSON API request" do
+      it "updates the receipt info and returns success JSON" do
+        patch :update, params: params, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body).to eq({ "success" => true })
+        expect(product.reload.custom_receipt_text).to eq("Thanks for buying!")
+        expect(product.custom_view_content_button_text).to eq("Download Now")
+      end
     end
   end
 end
