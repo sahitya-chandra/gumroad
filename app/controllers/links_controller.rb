@@ -273,11 +273,6 @@ class LinksController < ApplicationController
     render json: { success: true }
   end
 
-  # edit action moved to Products::Edit::ProductController
-
-
-  # update action moved to per-tab controllers (Products/Edit/*)
-
   def unpublish
     authorize @product
 

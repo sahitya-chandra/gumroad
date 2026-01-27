@@ -32,8 +32,6 @@ module Products
 
       private
         def update_content_attributes
-          # Content tab specific updates
-          # Exclude rich_content as it's handled via update_rich_content
           @product.assign_attributes(product_permitted_params.except(:files, :variants, :custom_domain, :rich_content))
           SaveFilesService.perform(@product, product_permitted_params, rich_content_params)
           update_rich_content

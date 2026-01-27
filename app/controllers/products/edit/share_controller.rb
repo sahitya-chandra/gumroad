@@ -33,7 +33,6 @@ module Products
       private
 
         def update_share_attributes
-          # Share tab specific updates
           @product.assign_attributes(product_permitted_params.except(:tags))
           @product.save_tags!(product_permitted_params[:tags] || [])
           update_custom_domain if product_permitted_params.key?(:custom_domain)

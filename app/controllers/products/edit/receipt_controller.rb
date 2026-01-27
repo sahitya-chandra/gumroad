@@ -33,7 +33,6 @@ module Products
       private
 
         def update_receipt_attributes
-          # Receipt tab specific updates
           @product.assign_attributes(product_permitted_params.except(:custom_domain))
           @product.save!
         end

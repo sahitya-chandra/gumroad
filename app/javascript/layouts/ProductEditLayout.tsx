@@ -56,7 +56,7 @@ export type EditProps = {
   cancellation_discounts_enabled: boolean;
   ai_generated: boolean;
   logged_in_user: LoggedInUser | null;
-  current_seller: any; // Keep any for current_seller as its shape is defined in Layout.tsx but not exported as a type
+  current_seller: any;
 };
 
 export default function ProductEditLayout({ children }: { children: React.ReactNode }) {
@@ -92,7 +92,6 @@ export default function ProductEditLayout({ children }: { children: React.ReactN
   };
 
   const save = async () => {
-    // Legacy logic to filter files based on rich text content
     const editor = new Editor(baseEditorOptions(extensions(id)));
     const richContents =
       form.data.product.has_same_rich_content_for_all_variants || !form.data.product.variants.length
@@ -134,7 +133,6 @@ export default function ProductEditLayout({ children }: { children: React.ReactN
     form.patch(updateUrl, {
       preserveScroll: true,
       onSuccess: () => {
-        // Flash message handled server-side
         lastSavedProductRef.current = structuredClone(form.data.product);
       },
     });

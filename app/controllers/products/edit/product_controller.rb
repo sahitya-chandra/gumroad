@@ -39,11 +39,6 @@ module Products
       private
 
         def update_product_attributes
-          # Product tab specific updates
-          # Note: We exclude attributes that either:
-          # - Are handled separately (description, variants, etc.)
-          # - Are nested hashes that can't be directly assigned (refund_policy, integrations)
-          # - Don't exist as direct model attributes (file_attributes)
           @product.assign_attributes(product_permitted_params.except(
             :description,
             :cancellation_discount,
