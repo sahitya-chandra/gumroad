@@ -71,6 +71,30 @@ describe LinksController, :vcr, inertia: true do
         expect(@disabled_link.reload.purchase_disabled_at).to be_nil
       end
 
+      context "with Inertia request" do
+        before do
+          request.headers["X-Inertia"] = "true"
+        end
+
+        it "publishes and redirects with flash notice" do
+          post :publish, params: { id: @disabled_link.unique_permalink }
+
+          expect(response).to redirect_to(edit_link_path(@disabled_link.unique_permalink))
+          expect(flash[:notice]).to eq("Published!")
+          expect(@disabled_link.reload.purchase_disabled_at).to be_nil
+        end
+
+        it "sets flash error when publish fails" do
+          allow_any_instance_of(Link).to receive(:publishable?) { false }
+
+          post :publish, params: { id: @disabled_link.unique_permalink }
+
+          expect(response).to redirect_to(edit_link_path(@disabled_link.unique_permalink))
+          expect(flash[:error]).to be_present
+          expect(@disabled_link.reload.purchase_disabled_at).to be_present
+        end
+      end
+
       context "when link is not publishable" do
         before do
           allow_any_instance_of(Link).to receive(:publishable?) { false }
@@ -140,6 +164,31 @@ describe LinksController, :vcr, inertia: true do
         let(:product) { create(:product, user: seller) }
         let(:request_params) { { id: product.unique_permalink } }
         let(:response_attributes) { { "success" => true } }
+      end
+
+      it "unpublishes a published link" do
+        product = create(:product, user: seller)
+
+        post :unpublish, params: { id: product.unique_permalink }
+
+        expect(response.parsed_body["success"]).to eq(true)
+        expect(product.reload.purchase_disabled_at).to be_present
+      end
+
+      context "with Inertia request" do
+        before do
+          request.headers["X-Inertia"] = "true"
+        end
+
+        it "unpublishes and redirects with flash notice" do
+          product = create(:product, user: seller)
+
+          post :unpublish, params: { id: product.unique_permalink }
+
+          expect(response).to redirect_to(edit_link_path(product.unique_permalink))
+          expect(flash[:notice]).to eq("Unpublished!")
+          expect(product.reload.purchase_disabled_at).to be_present
+        end
       end
     end
 
