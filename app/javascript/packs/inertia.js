@@ -11,6 +11,14 @@ if (csrfToken) {
   requestDefaults.headers = { "X-CSRF-Token": csrfToken };
 }
 
+router.on("start", () => {
+  window.__activeRequests = (window.__activeRequests || 0) + 1;
+});
+
+router.on("finish", () => {
+  window.__activeRequests = Math.max((window.__activeRequests || 1) - 1, 0);
+});
+
 // Configure Inertia to send CSRF token with all requests
 router.on("before", (event) => {
   const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
