@@ -46,6 +46,8 @@ class ApplicationController < ActionController::Base
 
   add_flash_types :warning
 
+  after_action :set_html_charset
+
   def redirect_to_next
     safe_redirect_to(params[:next])
   end
@@ -273,6 +275,13 @@ class ApplicationController < ActionController::Base
 
     def hide_layouts
       @hide_layouts = true
+    end
+
+    def set_html_charset
+      return unless request.format.html?
+      return if response.charset.present?
+
+      response.charset = "utf-8"
     end
 
     def add_user_to_bugsnag(event)

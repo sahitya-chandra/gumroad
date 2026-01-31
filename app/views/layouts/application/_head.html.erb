@@ -1,4 +1,5 @@
 <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# <%= FACEBOOK_OG_NAMESPACE %>: http://ogp.me/ns/fb/<%= FACEBOOK_OG_NAMESPACE %>#">
+  <meta charset="utf-8">
   <% if Rails.application.config.asset_host %>
     <link rel="dns-prefetch" href="<%= "//#{URI.parse(Rails.application.config.asset_host).host}" %>">
   <% end %>

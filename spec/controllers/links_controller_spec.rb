@@ -3242,6 +3242,23 @@ describe LinksController, :vcr, inertia: true do
         end
       end
 
+      describe "umlaut characters in product title and description" do
+        it "renders umlauts correctly in the response body and sets charset" do
+          link = create(:product, user: @user, name: "Käse Größe Über", description: "<p>Müller führt Größe.</p>")
+          get :show, params: { id: link.to_param }
+
+          expect(response).to be_successful
+          expect(response.media_type).to eq("text/html")
+          expect(response.charset).to eq("utf-8")
+
+          expect(response.body).to include("Käse Größe Über")
+          expect(response.body).to include("Müller führt Größe")
+          expect(response.body).not_to include("Ã¤")
+          expect(response.body).not_to include("Ã¶")
+          expect(response.body).not_to include("Ã¼")
+        end
+      end
+
       describe "asset previews" do
         before do
           @product = create(:product_with_file_and_preview, user: @user)

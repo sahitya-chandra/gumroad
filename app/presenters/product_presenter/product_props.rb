@@ -17,7 +17,7 @@ class ProductPresenter::ProductProps
       product: {
         id: product.external_id,
         permalink: product.unique_permalink,
-        name: product.name,
+        name: utf8_string(product.name),
         seller: UserPresenter.new(user: seller).author_byline_props(custom_domain_url: seller_custom_domain_url, recommended_by:),
         collaborating_user: collaborator.present? ? UserPresenter.new(user: collaborator).author_byline_props : nil,
         covers: product.display_asset_previews.as_json,
@@ -35,7 +35,7 @@ class ProductPresenter::ProductProps
         sales_count: cached_sales_count,
         summary: product.custom_summary.presence,
         attributes: attributes_props,
-        description_html: product.html_safe_description,
+        description_html: product.html_safe_description&.then { |html| utf8_string(html.to_s) },
         currency_code: product.price_currency_type.downcase,
         price_cents: product.price_cents,
         rental_price_cents: product.rental_price_cents,
@@ -80,6 +80,15 @@ class ProductPresenter::ProductProps
 
   private
     attr_reader :product, :seller
+
+    def utf8_string(str)
+      return nil if str.nil?
+
+      s = str.to_s.dup
+      return s if s.encoding == Encoding::UTF_8 && s.valid_encoding?
+
+      s.encode(Encoding::UTF_8, invalid: :replace, undef: :replace)
+    end
 
     def discount_code_props(discount_code_from_url, quantity)
       url_code = discount_code_from_url.presence
@@ -180,7 +189,7 @@ class ProductPresenter::ProductProps
       product = bundle_product.product
       {
         id: product.external_id,
-        name: product.name,
+        name: utf8_string(product.name),
         ratings: product.display_product_reviews? ? {
           count: product.reviews_count,
           average: product.average_rating,
